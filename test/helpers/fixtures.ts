@@ -32,3 +32,12 @@ export function pptxBytes(slides: number): Uint8Array {
     `<p:sldIdLst>${ids}</p:sldIdLst></p:presentation>`;
   return zipBytes({ 'ppt/presentation.xml': xml });
 }
+
+export function docxBytes(opts: { pages?: number } = {}): Uint8Array {
+  const files: Record<string, string> = { 'word/document.xml': '<w:document/>' };
+  if (opts.pages != null) {
+    files['docProps/app.xml'] =
+      `<?xml version="1.0"?><Properties xmlns="ext"><Pages>${opts.pages}</Pages></Properties>`;
+  }
+  return zipBytes(files);
+}
