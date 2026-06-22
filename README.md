@@ -2,9 +2,9 @@
 
 > Add exact page counts to a spreadsheet of document URLs — or check a single file from the command line.
 
-**Status:** 🚧 In development. The design is finalized (see the
-[design spec](docs/superpowers/specs/2026-06-22-pagecount-cli-design.md)); the
-implementation is in progress, so the install/build commands below are not wired up yet.
+**Status:** Implemented and tested (90 passing tests). Built from the
+[design spec](docs/superpowers/specs/2026-06-22-pagecount-cli-design.md); not yet
+published to npm — install from a clone (see below).
 
 `pagecount` is a command-line tool with two modes, chosen automatically by what you give it:
 
@@ -22,7 +22,7 @@ implementation is in progress, so the install/build commands below are not wired
 
 ## Install
 
-While in development, from a clone of the repo:
+Until it's published to npm, install from a clone of the repo:
 
 ```bash
 npm install
@@ -58,6 +58,9 @@ pagecount *.csv
 pagecount survey.csv ../reports/q3.xlsx
 ```
 
+See [`samples/example.csv`](samples/example.csv) for the expected input shape — a
+column of public document URLs (swap in your own URLs to try it).
+
 ### Document mode
 
 Check a single file without touching a spreadsheet:
@@ -89,6 +92,7 @@ Nothing is written to disk. Exits non-zero if the file can't be counted.
 | `--timeout <sec>` | per-URL fetch timeout | `30` |
 | `--max-size <mb>` | skip files larger than this | `100` |
 | `--docx-render` | force LibreOffice render for DOCX | auto when available |
+| `--allow-private-hosts` | allow fetching loopback/private/link-local hosts | off (blocked for SSRF safety) |
 | `-h, --help` | show help | |
 | `--version` | show version | |
 
@@ -130,12 +134,26 @@ blank (spreadsheet mode) or reported as an error (document mode).
 - Add `--json` for a sidecar file with the full per-row detail (URL, type, count,
   status, error).
 
+## Security
+
+`pagecount` fetches arbitrary URLs from your spreadsheet, so it includes basic
+safeguards for untrusted input:
+
+- **SSRF protection** — URLs (and any redirects they follow) that resolve to loopback,
+  private, or link-local addresses are refused. Pass `--allow-private-hosts` if you
+  intentionally need to reach an internal server.
+- **Zip-bomb caps** — DOCX/PPTX archives are bounded (50 MB per entry, 200 MB total
+  uncompressed) so a malicious file can't exhaust memory.
+
+These mitigate the common cases; they are not a substitute for fully sandboxing
+genuinely hostile input.
+
 ## Development
 
 ```bash
 npm install
 npm run build      # bundle to dist/
-npm test           # vitest
+npm test           # vitest (90 tests)
 ```
 
 See the [design spec](docs/superpowers/specs/2026-06-22-pagecount-cli-design.md) for
