@@ -3,6 +3,7 @@ import { PDFDocument } from 'pdf-lib';
 import { mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import ExcelJS from 'exceljs';
 
 /** Build an in-memory ZIP from a map of path → text content. */
 export function zipBytes(files: Record<string, string>): Uint8Array {
@@ -40,4 +41,14 @@ export function docxBytes(opts: { pages?: number } = {}): Uint8Array {
       `<?xml version="1.0"?><Properties xmlns="ext"><Pages>${opts.pages}</Pages></Properties>`;
   }
   return zipBytes(files);
+}
+
+export async function writeXlsxFile(
+  path: string, header: string[], rows: (string | number)[][],
+): Promise<void> {
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet('Sheet1');
+  ws.addRow(header);
+  for (const r of rows) ws.addRow(r);
+  await wb.xlsx.writeFile(path);
 }
