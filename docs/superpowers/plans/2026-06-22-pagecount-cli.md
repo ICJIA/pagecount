@@ -123,7 +123,6 @@ test/
     "lib": ["ES2022"],
     "types": ["node"],
     "strict": true,
-    "noUncheckedIndexedAccess": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
