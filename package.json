@@ -6,12 +6,18 @@
   "bin": { "pagecount": "dist/cli.js" },
   "files": ["dist"],
   "engines": { "node": ">=20" },
+  "repository": { "type": "git", "url": "git+https://github.com/ICJIA/pagecount.git" },
+  "homepage": "https://github.com/ICJIA/pagecount#readme",
+  "bugs": { "url": "https://github.com/ICJIA/pagecount/issues" },
+  "keywords": ["pdf", "docx", "pptx", "page-count", "cli", "spreadsheet", "csv", "xlsx"],
+  "license": "MIT",
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepare": "npm run build"
   },
   "dependencies": {
     "commander": "^12.1.0",

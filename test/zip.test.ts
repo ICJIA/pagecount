@@ -26,4 +26,11 @@ describe('zip helper', () => {
     expect(entryText(zip, 'small.txt')).toBe('ok');
     expect('big.txt' in zip).toBe(false);
   });
+
+  it('caps the number of accepted entries', () => {
+    const bytes = zipBytes({ 'a.txt': '1', 'b.txt': '2', 'c.txt': '3' });
+    const zip = loadZipFromBytes(bytes, { maxEntries: 1 });
+    expect(Object.keys(zip)).toHaveLength(1);
+    expect(entryText(zip, 'a.txt')).toBe('1');
+  });
 });

@@ -1,3 +1,4 @@
+import { resolve } from 'node:path';
 import type { Config } from './config';
 import type { CountOutcome, FileType } from './types';
 import { fetchToTempFile } from './fetch';
@@ -15,9 +16,10 @@ export interface CountResult {
 const UNSUPPORTED: CountResult = { type: null, outcome: { pageCount: null, status: 'unsupported' } };
 
 export async function countLocalFile(filePath: string, cfg: Config): Promise<CountResult> {
-  const type = typeFromExtension(filePath) ?? (await sniffType(filePath));
+  const abs = resolve(filePath);
+  const type = typeFromExtension(abs) ?? (await sniffType(abs));
   if (!type) return UNSUPPORTED;
-  return { type, outcome: await countByType(type, filePath, cfg) };
+  return { type, outcome: await countByType(type, abs, cfg) };
 }
 
 export async function countUrl(url: string, cfg: Config): Promise<CountResult> {

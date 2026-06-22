@@ -68,6 +68,14 @@ function ipv6IsPrivate(ip: string): boolean {
     const v4 = `${(h[6]! >> 8) & 0xff}.${h[6]! & 0xff}.${(h[7]! >> 8) & 0xff}.${h[7]! & 0xff}`;
     return ipv4IsPrivate(v4);
   }
+  // NAT64 64:ff9b::/96 — embedded IPv4 in the low 32 bits
+  if (h[0] === 0x0064 && h[1] === 0xff9b && h[2] === 0 && h[3] === 0 && h[4] === 0 && h[5] === 0) {
+    return ipv4IsPrivate(`${(h[6]! >> 8) & 0xff}.${h[6]! & 0xff}.${(h[7]! >> 8) & 0xff}.${h[7]! & 0xff}`);
+  }
+  // 6to4 2002::/16 — embedded IPv4 in hextets 1-2
+  if (h[0] === 0x2002) {
+    return ipv4IsPrivate(`${(h[1]! >> 8) & 0xff}.${h[1]! & 0xff}.${(h[2]! >> 8) & 0xff}.${h[2]! & 0xff}`);
+  }
   return false;
 }
 

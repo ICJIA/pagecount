@@ -5,7 +5,7 @@ import { classifyInput } from './input';
 import { processSpreadsheet } from './spreadsheet/process';
 import { countDocument } from './document';
 import {
-  formatSpreadsheetSummary, buildSpreadsheetJson, formatDocumentLine, buildDocumentJson,
+  formatSpreadsheetSummary, buildSpreadsheetJson, formatDocumentLine, buildDocumentJson, rowNote,
 } from './report';
 
 // Output path without an extension: <dir>/<name>-<suffix>
@@ -24,7 +24,7 @@ export function outputPathFor(inputPath: string, cfg: Config): string {
 
 async function runSpreadsheet(path: string, cfg: Config): Promise<void> {
   const { loaded, results, summary, counts } = await processSpreadsheet(path, cfg);
-  const notes = results.map((r) => (r.status === 'ok' ? '' : r.status));
+  const notes = results.map(rowNote);
   const columns = [
     { header: cfg.countColumn, values: counts },
     { header: `${cfg.countColumn}_notes`, values: notes },

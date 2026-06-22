@@ -29,4 +29,12 @@ describe('resolveConfig', () => {
     expect(() => resolveConfig({ concurrency: '0' })).toThrow();
     expect(() => resolveConfig({ timeout: 'abc' })).toThrow();
   });
+
+  it('clamps concurrency to 64', () => {
+    expect(resolveConfig({ concurrency: '1000' }).concurrency).toBe(64);
+  });
+
+  it('rejects a path-traversing suffix', () => {
+    expect(() => resolveConfig({ suffix: '../x' })).toThrow();
+  });
 });

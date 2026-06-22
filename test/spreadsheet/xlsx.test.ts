@@ -50,6 +50,16 @@ describe('xlsx read/write', () => {
     expect(reread.rows[1]).toEqual(['B', 'u2', '', 'corrupt']);
   });
 
+  it('neutralizes formula-injection cells with a leading quote', async () => {
+    const dir = await tmpDir();
+    const out = join(dir, 'inject.xlsx');
+    await writeXlsxFromData(out, ['h1', 'h2', 'h3', 'h4'], [['=cmd|x', '+1', '-2', '@SUM(A1)']], []);
+    const reread = await readXlsx(out);
+    for (const cell of reread.rows[0]!) {
+      expect(cell.startsWith("'")).toBe(true);
+    }
+  });
+
   it('writeXlsxFromData builds a fresh workbook from plain data', async () => {
     const dir = await tmpDir();
     const out = join(dir, 'fresh.xlsx');

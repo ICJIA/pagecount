@@ -44,3 +44,12 @@ export function buildDocumentJson(source: string, type: FileType | null, outcome
     ...(outcome.error ? { error: outcome.error } : {}),
   };
 }
+
+// Value for the page_count_notes column: the failure status for non-ok rows, an
+// "estimate" caveat for counted DOCX (pagination is renderer/font-dependent), and
+// empty for exact PDF/PPTX counts.
+export function rowNote(r: RowResult): string {
+  if (r.status !== 'ok') return r.status;
+  if (r.type === 'docx') return 'estimate (docx page count depends on fonts/margins)';
+  return '';
+}

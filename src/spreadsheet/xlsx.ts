@@ -1,5 +1,6 @@
 import ExcelJS from 'exceljs';
 import type { AppendColumn } from '../types';
+import { sanitizeCell } from './sanitize';
 
 export interface XlsxData {
   header: string[];
@@ -39,10 +40,13 @@ export async function writeXlsx(
   const start = sheet.columnCount;
   columns.forEach((col, j) => {
     const c = start + 1 + j;
-    sheet.getRow(1).getCell(c).value = col.header;
+    sheet.getRow(1).getCell(c).value = sanitizeCell(col.header);
     for (let i = 0; i < col.values.length; i++) {
       const value = col.values[i];
-      if (value != null && value !== '') sheet.getRow(i + 2).getCell(c).value = value;
+      if (value != null && value !== '') {
+        sheet.getRow(i + 2).getCell(c).value =
+          typeof value === 'string' ? sanitizeCell(value) : value;
+      }
     }
   });
   await workbook.xlsx.writeFile(outPath);
@@ -58,13 +62,13 @@ export async function writeXlsxFromData(
 ): Promise<void> {
   const workbook = new ExcelJS.Workbook();
   const sheet = workbook.addWorksheet('Sheet1');
-  sheet.addRow([...header, ...columns.map((c) => c.header)]);
+  sheet.addRow([...header, ...columns.map((c) => c.header)].map((v) => (typeof v === 'string' ? sanitizeCell(v) : v)));
   rows.forEach((r, i) => {
     const extra = columns.map((c) => {
       const v = c.values[i];
       return v == null || v === '' ? '' : v;
     });
-    sheet.addRow([...r, ...extra]);
+    sheet.addRow([...r, ...extra].map((v) => (typeof v === 'string' ? sanitizeCell(v) : v)));
   });
   await workbook.xlsx.writeFile(outPath);
 }

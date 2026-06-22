@@ -16,7 +16,7 @@ const noRenderer: DocxDeps = {
 function fakeRenderer(pages: number): DocxDeps {
   return {
     findRenderer: () => 'soffice',
-    render: async () => 'rendered.pdf',
+    render: async () => ({ pdfPath: 'rendered.pdf', cleanup: async () => {} }),
     countPdf: async (): Promise<CountOutcome> => ({ pageCount: pages, status: 'ok' }),
   };
 }

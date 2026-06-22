@@ -1,6 +1,6 @@
 import { spawn, spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
-import { mkdtemp } from 'node:fs/promises';
+import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, basename } from 'node:path';
 
@@ -23,16 +23,28 @@ export function findLibreOffice(): string | null {
   return null;
 }
 
+export interface RenderedPdf {
+  pdfPath: string;
+  cleanup: () => Promise<void>;
+}
+
 export async function renderDocxToPdf(
   filePath: string,
   soffice: string | null = findLibreOffice(),
-): Promise<string> {
+): Promise<RenderedPdf> {
   if (!soffice) throw new Error('LibreOffice not found');
   const outDir = await mkdtemp(join(tmpdir(), 'pc-render-'));
   await new Promise<void>((resolve, reject) => {
-    const proc = spawn(soffice, ['--headless', '--convert-to', 'pdf', '--outdir', outDir, filePath], { stdio: 'ignore' });
+    const proc = spawn(
+      soffice,
+      ['--headless', `-env:UserInstallation=file://${outDir}`, '--convert-to', 'pdf', '--outdir', outDir, filePath],
+      { stdio: 'ignore', timeout: 60_000 },
+    );
     proc.on('error', reject);
     proc.on('exit', (code) => (code === 0 ? resolve() : reject(new Error(`soffice exited with code ${code}`))));
   });
-  return join(outDir, basename(filePath).replace(/\.[^.]+$/, '') + '.pdf');
+  return {
+    pdfPath: join(outDir, basename(filePath).replace(/\.[^.]+$/, '') + '.pdf'),
+    cleanup: () => rm(outDir, { recursive: true, force: true }),
+  };
 }

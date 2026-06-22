@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  summarize, formatSpreadsheetSummary, formatDocumentLine, buildDocumentJson,
+  summarize, formatSpreadsheetSummary, formatDocumentLine, buildDocumentJson, rowNote,
 } from '../src/report';
 import type { RowResult } from '../src/types';
 
@@ -36,5 +36,20 @@ describe('formatters', () => {
   it('builds document json including an error field', () => {
     expect(buildDocumentJson('a.pdf', null, { pageCount: null, status: 'corrupt', error: 'bad' }))
       .toEqual({ file: 'a.pdf', type: null, pageCount: null, status: 'corrupt', error: 'bad' });
+  });
+});
+
+describe('rowNote', () => {
+  it('flags a counted docx page count as an estimate', () => {
+    expect(rowNote({ row: 2, url: 'u', type: 'docx', pageCount: 5, status: 'ok' }))
+      .toMatch(/estimate/i);
+  });
+  it('is empty for exact pdf/pptx counts', () => {
+    expect(rowNote({ row: 2, url: 'u', type: 'pdf', pageCount: 3, status: 'ok' })).toBe('');
+    expect(rowNote({ row: 2, url: 'u', type: 'pptx', pageCount: 3, status: 'ok' })).toBe('');
+  });
+  it('returns the failure status for non-ok rows', () => {
+    expect(rowNote({ row: 2, url: 'u', type: null, pageCount: null, status: 'corrupt' })).toBe('corrupt');
+    expect(rowNote({ row: 3, url: null, type: null, pageCount: null, status: 'no-url' })).toBe('no-url');
   });
 });

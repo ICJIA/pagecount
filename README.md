@@ -22,15 +22,26 @@ published to npm — install from a clone (see below).
 
 ## Install
 
-Until it's published to npm, install from a clone of the repo:
+**Run without installing** (once published to npm):
+
+```bash
+npx @icjia/pagecount data.csv
+```
+
+**Install globally:**
+
+```bash
+npm i -g @icjia/pagecount                  # once published to npm
+npm i -g github:ICJIA/pagecount            # or straight from GitHub (builds on install)
+```
+
+**From a clone (for development):**
 
 ```bash
 npm install
 npm run build
 npm link          # puts `pagecount` on your PATH
 ```
-
-Once published: `npm i -g @icjia/pagecount`.
 
 ## Usage
 
@@ -149,10 +160,17 @@ safeguards for untrusted input:
   private, or link-local addresses are refused. Pass `--allow-private-hosts` if you
   intentionally need to reach an internal server.
 - **Zip-bomb caps** — DOCX/PPTX archives are bounded (50 MB per entry, 200 MB total
-  uncompressed) so a malicious file can't exhaust memory.
+  uncompressed, 4096 entries) so a malicious file can't exhaust memory.
+- **Formula-injection defense** — output cells beginning with `=`, `+`, `-`, `@` are
+  prefixed with `'` so they aren't executed as formulas when the report is opened.
 
 These mitigate the common cases; they are not a substitute for fully sandboxing
 genuinely hostile input.
+
+**Known limitations** — DNS-rebinding / TOCTOU is *not* mitigated: the address
+validated during the SSRF check can differ from the one the socket later connects to,
+so don't run `pagecount` as a network-exposed service against untrusted input. DOCX
+page counts are estimates (pagination depends on fonts, margins, and page size).
 
 ## Development
 

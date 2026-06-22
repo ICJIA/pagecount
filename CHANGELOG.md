@@ -1,0 +1,55 @@
+# Changelog
+
+All notable changes to `pagecount` are documented here. The format is based on
+[Keep a Changelog](https://keepachangelog.com/), and the project follows
+[Semantic Versioning](https://semver.org/).
+
+## [0.1.0] — 2026-06-22
+
+Initial release.
+
+### Added
+
+- **Spreadsheet mode** — read a CSV/XLSX column of public document URLs (PDF/DOCX/PPTX),
+  count each file's pages, and write the result with two appended columns,
+  `programmatic_page_count` and `programmatic_page_count_notes`, as **both** a `.csv`
+  and an `.xlsx`.
+- **Document mode** — count a single local file or URL and print the result; exits
+  non-zero on failure.
+- **Page counting** — exact for PDF (via `pdf-lib`, with a `pdfinfo`/poppler fallback
+  for encrypted or structurally unusual PDFs) and PPTX (slide count). DOCX uses cached
+  `<Pages>` metadata or an optional LibreOffice render fallback, and is flagged as an
+  estimate in the notes column (pagination depends on fonts/margins).
+- **Smart URL-column auto-detection** that prefers columns linking to actual documents
+  over columns of page/reference URLs; override with `--column`.
+- Concurrency (default 8), per-URL timeout (default 30s), and a max-size cap (100MB).
+- Output written to a `.pagecount-output/` directory beside each input, overwriting
+  prior results (no versioned files); stale JSON sidecars are pruned.
+- Optional JSON sidecar (`--json`) with full per-row detail.
+- The `programmatic_page_count_notes` column records why a row is blank
+  (`no-url`, `unsupported`, `not-found`, `timeout`, `corrupt`, …) and flags DOCX
+  estimates.
+
+### Security
+
+- **SSRF protection** — refuses URLs (and every redirect hop) that resolve to
+  loopback, private, link-local, or CGNAT addresses, using value-based IPv6 detection
+  including IPv4-mapped, NAT64 (`64:ff9b::/96`), and 6to4 (`2002::/16`) forms that
+  embed a private IPv4. Non-http(s) schemes are rejected. Opt out with
+  `--allow-private-hosts`.
+- **Decompression-bomb caps** — DOCX/PPTX archives are bounded (50 MB per entry,
+  200 MB total uncompressed, and a 4096-entry cap).
+- **Formula-injection neutralization** — output cells beginning with `=`, `+`, `-`,
+  `@`, TAB, or CR are prefixed with `'` in both CSV and XLSX writers so spreadsheet
+  apps treat them as text, not live formulas.
+- **LibreOffice render hardening** — DOCX-render temp directories are now always
+  cleaned up after use, the `soffice` conversion runs under a 60-second timeout, and
+  it uses an isolated per-render user profile.
+- **`--suffix` traversal rejection** — a suffix containing a path separator or `..`
+  is refused so output paths can't escape the intended directory.
+- **`--concurrency` clamp** — concurrency is capped at 64 to bound resource use.
+- **Safer local-path handling** — local file paths are resolved to absolute before
+  being passed to external tools, so a leading-dash filename can't be read as an
+  option.
+
+[0.1.0]: https://github.com/ICJIA/pagecount/releases/tag/v0.1.0

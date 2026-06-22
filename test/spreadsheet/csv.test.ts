@@ -19,4 +19,13 @@ describe('csv read/write', () => {
     const reread = await readCsv(out);
     expect(reread.rows[0]).toEqual(['A, Inc.', 'u1']);
   });
+
+  it('neutralizes formula-injection cells with a leading quote', async () => {
+    const out = await writeTemp('', 'out.csv');
+    await writeCsv(out, ['h1', 'h2', 'h3', 'h4'], [['=cmd|x', '+1', '-2', '@SUM(A1)']]);
+    const reread = await readCsv(out);
+    for (const cell of reread.rows[0]!) {
+      expect(cell.startsWith("'")).toBe(true);
+    }
+  });
 });

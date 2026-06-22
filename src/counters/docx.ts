@@ -7,7 +7,7 @@ import { countPdf } from './pdf';
 
 export interface DocxDeps {
   findRenderer: () => string | null;
-  render: (filePath: string, soffice: string) => Promise<string>;
+  render: (filePath: string, soffice: string) => Promise<{ pdfPath: string; cleanup: () => Promise<void> }>;
   countPdf: (filePath: string) => Promise<CountOutcome>;
 }
 
@@ -43,12 +43,16 @@ export async function countDocx(
   const wantRender = cfg.docxRender || metadata === null;
 
   if (wantRender && soffice) {
+    let cleanup: (() => Promise<void>) | undefined;
     try {
-      const pdf = await deps.render(filePath, soffice);
-      const out = await deps.countPdf(pdf);
+      const rendered = await deps.render(filePath, soffice);
+      cleanup = rendered.cleanup;
+      const out = await deps.countPdf(rendered.pdfPath);
       if (out.status === 'ok') return { ...out, rendered: true };
     } catch {
       // fall through to metadata / no-page-data
+    } finally {
+      if (cleanup) await cleanup().catch(() => {});
     }
   }
 

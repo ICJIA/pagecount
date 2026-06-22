@@ -44,14 +44,18 @@ function positive(value: string | number | undefined, fallback: number): number 
 }
 
 export function resolveConfig(raw: RawOptions): Config {
+  const suffix = raw.suffix ?? DEFAULTS.suffix;
+  if (/[/\\]|\.\./.test(suffix)) {
+    throw new Error('--suffix may not contain path separators or ".."');
+  }
   return {
     output: raw.output,
     column: raw.column,
     countColumn: raw.countColumn ?? DEFAULTS.countColumn,
-    suffix: raw.suffix ?? DEFAULTS.suffix,
+    suffix,
     json: raw.json ?? false,
     quiet: raw.quiet ?? false,
-    concurrency: positive(raw.concurrency, DEFAULTS.concurrency),
+    concurrency: Math.min(positive(raw.concurrency, DEFAULTS.concurrency), 64),
     timeout: positive(raw.timeout, DEFAULTS.timeoutSec) * 1000,
     maxSize: positive(raw.maxSize, DEFAULTS.maxSizeMb) * 1024 * 1024,
     docxRender: raw.docxRender ?? false,

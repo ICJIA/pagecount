@@ -13,7 +13,7 @@ export interface FetchedFile {
 }
 
 const MAX_REDIRECTS = 5;
-const USER_AGENT = 'pagecount/0.1 (+https://github.com/ICJIA/icjia-pagecount)';
+const USER_AGENT = 'pagecount/0.1 (+https://github.com/ICJIA/pagecount)';
 
 async function followRedirects(initialUrl: string, cfg: Config, signal: AbortSignal): Promise<Response> {
   let url = initialUrl;

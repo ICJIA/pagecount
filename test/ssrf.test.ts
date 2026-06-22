@@ -42,6 +42,18 @@ describe('isPrivateAddress', () => {
   it('allows a public IPv6 address', () => {
     expect(isPrivateAddress('2001:4860:4860::8888')).toBe(false);
   });
+
+  it('flags NAT64-embedded private IPv4 (64:ff9b::/96)', () => {
+    expect(isPrivateAddress('64:ff9b::7f00:1')).toBe(true);
+  });
+
+  it('flags 6to4-embedded private IPv4 (2002::/16)', () => {
+    expect(isPrivateAddress('2002:7f00:1::')).toBe(true);
+  });
+
+  it('allows 6to4-embedded public IPv4', () => {
+    expect(isPrivateAddress('2002:0808:0808::')).toBe(false);
+  });
 });
 
 describe('assertPublicUrl', () => {
