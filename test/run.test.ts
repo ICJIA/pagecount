@@ -60,9 +60,9 @@ describe('run — spreadsheet mode (end-to-end)', () => {
     const outPath = outputPathFor(file, resolveConfig({ allowPrivateHosts: true }));
     await stat(outPath); // throws if missing
     const text = await readFile(outPath, 'utf8');
-    expect(text).toContain('Name,Link,PageCount');
-    expect(text).toContain(',4');
-    expect(text.trim().split('\n')[2]).toBe('B,,');
+    expect(text).toContain('Name,Link,programmatic_page_count,programmatic_page_count_notes');
+    expect(text).toContain(',4,');
+    expect(text.trim().split('\n')[2]).toBe('B,,,no-url');
     log.mockRestore();
   });
 });

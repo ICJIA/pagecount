@@ -27,7 +27,7 @@ export interface RawOptions {
 }
 
 export const DEFAULTS = {
-  countColumn: 'PageCount',
+  countColumn: 'programmatic_page_count',
   suffix: 'pagecount',
   concurrency: 8,
   timeoutSec: 30,

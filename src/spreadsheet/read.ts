@@ -1,11 +1,16 @@
 import { extname } from 'node:path';
+import type { AppendColumn } from '../types';
 import { readCsv, writeCsv } from './csv';
 import { readXlsx, writeXlsx } from './xlsx';
 
 export interface LoadedSpreadsheet {
   header: string[];
   rows: string[][];
-  write: (outPath: string, countHeader: string, counts: (number | null)[]) => Promise<void>;
+  write: (outPath: string, columns: AppendColumn[]) => Promise<void>;
+}
+
+function cell(value: string | number | null | undefined): string {
+  return value == null ? '' : String(value);
 }
 
 export async function readSpreadsheet(path: string): Promise<LoadedSpreadsheet> {
@@ -16,11 +21,11 @@ export async function readSpreadsheet(path: string): Promise<LoadedSpreadsheet> 
     return {
       header,
       rows,
-      write: (outPath, countHeader, counts) =>
+      write: (outPath, columns) =>
         writeCsv(
           outPath,
-          [...header, countHeader],
-          rows.map((r, i) => [...r, counts[i] != null ? String(counts[i]) : '']),
+          [...header, ...columns.map((c) => c.header)],
+          rows.map((r, i) => [...r, ...columns.map((c) => cell(c.values[i]))]),
         ),
     };
   }
@@ -30,7 +35,7 @@ export async function readSpreadsheet(path: string): Promise<LoadedSpreadsheet> 
     return {
       header: data.header,
       rows: data.rows,
-      write: (outPath, countHeader, counts) => writeXlsx(data, outPath, countHeader, counts),
+      write: (outPath, columns) => writeXlsx(data, outPath, columns),
     };
   }
 

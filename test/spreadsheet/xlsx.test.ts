@@ -25,10 +25,28 @@ describe('xlsx read/write', () => {
     const out = join(dir, 'out.xlsx');
     await writeXlsxFile(file, ['Name', 'URL'], [['A', 'u1'], ['B', 'u2']]);
     const data = await readXlsx(file);
-    await writeXlsx(data, out, 'PageCount', [3, null]);
+    await writeXlsx(data, out, [{ header: 'PageCount', values: [3, null] }]);
     const reread = await readXlsx(out);
     expect(reread.header).toEqual(['Name', 'URL', 'PageCount']);
     expect(reread.rows[0]).toEqual(['A', 'u1', '3']);
     expect(reread.rows[1]).toEqual(['B', 'u2', '']);
+  });
+
+  it('appends multiple columns at the right', async () => {
+    const dir = await tmpDir();
+    const file = join(dir, 'in.xlsx');
+    const out = join(dir, 'out.xlsx');
+    await writeXlsxFile(file, ['Name', 'URL'], [['A', 'u1'], ['B', 'u2']]);
+    const data = await readXlsx(file);
+    await writeXlsx(data, out, [
+      { header: 'programmatic_page_count', values: [3, null] },
+      { header: 'programmatic_page_count_notes', values: ['', 'corrupt'] },
+    ]);
+    const reread = await readXlsx(out);
+    expect(reread.header).toEqual([
+      'Name', 'URL', 'programmatic_page_count', 'programmatic_page_count_notes',
+    ]);
+    expect(reread.rows[0]).toEqual(['A', 'u1', '3', '']);
+    expect(reread.rows[1]).toEqual(['B', 'u2', '', 'corrupt']);
   });
 });

@@ -40,16 +40,19 @@ Once published: `npm i -g @icjia/pagecount`.
 pagecount data.csv
 ```
 
-Reads `./data.csv`, finds the column of URLs, counts pages, and writes:
+Reads `./data.csv`, finds the column of document URLs (preferring links to actual
+pdf/docx/pptx files), counts pages, and writes:
 
 ```
 ./.pagecount-output/data-pagecount.csv
 ```
 
-The output is the original spreadsheet with a new `PageCount` column appended. The
-`.pagecount-output` directory is created beside the input file (and reused if it
-already exists). The same works for `.xlsx`, preserving the workbook's formatting and
-any extra sheets.
+The output is the original spreadsheet with **two columns appended at the far right**:
+`programmatic_page_count` (the count) and `programmatic_page_count_notes` (why a row is
+blank — e.g. `corrupt`, `unsupported`, `no-url`). They're always added, even if the
+sheet already has a "Page Count" column. The `.pagecount-output` directory is created
+beside the input file (and reused if it already exists). The same works for `.xlsx`,
+preserving the workbook's formatting and any extra sheets.
 
 Multiple files and globs — each writes to its own `.pagecount-output` beside it:
 
@@ -83,8 +86,8 @@ Nothing is written to disk. Exits non-zero if the file can't be counted.
 | Option | Description | Default |
 |---|---|---|
 | `-o, --output <dir>` | (spreadsheet) force one shared output dir | `.pagecount-output` beside each file |
-| `-c, --column <name\|index>` | (spreadsheet) URL column, by header name or 1-based index | auto-detect |
-| `--count-column <name>` | (spreadsheet) name of the added column | `PageCount` |
+| `-c, --column <name\|index>` | (spreadsheet) URL column, by header name or 1-based index | auto-detect (prefers document links) |
+| `--count-column <name>` | (spreadsheet) count column name (a `<name>_notes` column is added too) | `programmatic_page_count` |
 | `--suffix <text>` | (spreadsheet) output filename suffix; `""` to disable | `pagecount` |
 | `--json` | emit JSON (sidecar file in spreadsheet mode; stdout in document mode) | off |
 | `-q, --quiet` | (document) print only the bare page number | off |
@@ -121,9 +124,11 @@ blank (spreadsheet mode) or reported as an error (document mode).
 
 ## Output & errors (spreadsheet mode)
 
-- Rows without a full `http(s)` URL get a **blank** `PageCount`.
-- Rows whose URL fails (404, timeout, unsupported/corrupt file, encrypted PDF) also
-  get a blank cell; the failure is counted in the terminal summary:
+- Rows without a full `http(s)` URL get a **blank** `programmatic_page_count` and
+  `no-url` in `programmatic_page_count_notes`.
+- Rows whose URL fails (404, timeout, unsupported/corrupt file, encrypted PDF) also get
+  a blank count, with the reason in `programmatic_page_count_notes`; failures are also
+  counted in the terminal summary:
 
   ```
   data.csv  →  .pagecount-output/data-pagecount.csv

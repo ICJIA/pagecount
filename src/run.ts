@@ -19,9 +19,13 @@ export function outputPathFor(inputPath: string, cfg: Config): string {
 
 async function runSpreadsheet(path: string, cfg: Config): Promise<void> {
   const { loaded, results, summary, counts } = await processSpreadsheet(path, cfg);
+  const notes = results.map((r) => (r.status === 'ok' ? '' : r.status));
   const outPath = outputPathFor(path, cfg);
   await mkdir(dirname(outPath), { recursive: true });
-  await loaded.write(outPath, cfg.countColumn, counts);
+  await loaded.write(outPath, [
+    { header: cfg.countColumn, values: counts },
+    { header: `${cfg.countColumn}_notes`, values: notes },
+  ]);
   console.log(formatSpreadsheetSummary(path, outPath, summary));
   if (cfg.json) {
     const jsonPath = outPath.replace(/\.[^.]+$/, '.json');

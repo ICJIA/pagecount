@@ -1,4 +1,5 @@
 import ExcelJS from 'exceljs';
+import type { AppendColumn } from '../types';
 
 export interface XlsxData {
   header: string[];
@@ -30,15 +31,17 @@ export async function readXlsx(path: string): Promise<XlsxData> {
 export async function writeXlsx(
   data: Pick<XlsxData, 'workbook' | 'sheet'>,
   outPath: string,
-  countHeader: string,
-  counts: (number | null)[],
+  columns: AppendColumn[],
 ): Promise<void> {
   const { workbook, sheet } = data;
-  const col = sheet.columnCount + 1;
-  sheet.getRow(1).getCell(col).value = countHeader;
-  for (let i = 0; i < counts.length; i++) {
-    const value = counts[i];
-    if (value !== null) sheet.getRow(i + 2).getCell(col).value = value;
-  }
+  const start = sheet.columnCount;
+  columns.forEach((col, j) => {
+    const c = start + 1 + j;
+    sheet.getRow(1).getCell(c).value = col.header;
+    for (let i = 0; i < col.values.length; i++) {
+      const value = col.values[i];
+      if (value != null && value !== '') sheet.getRow(i + 2).getCell(c).value = value;
+    }
+  });
   await workbook.xlsx.writeFile(outPath);
 }

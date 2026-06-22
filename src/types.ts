@@ -41,3 +41,8 @@ export interface Summary {
   failed: number;
   byError: Record<string, number>;
 }
+
+export interface AppendColumn {
+  header: string;
+  values: (string | number | null)[];
+}

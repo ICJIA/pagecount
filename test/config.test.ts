@@ -4,7 +4,7 @@ import { resolveConfig } from '../src/config';
 describe('resolveConfig', () => {
   it('applies documented defaults', () => {
     const c = resolveConfig({});
-    expect(c.countColumn).toBe('PageCount');
+    expect(c.countColumn).toBe('programmatic_page_count');
     expect(c.suffix).toBe('pagecount');
     expect(c.concurrency).toBe(8);
     expect(c.timeout).toBe(30_000);          // seconds → ms
