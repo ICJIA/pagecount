@@ -3,7 +3,7 @@
 > Add exact page counts to a spreadsheet of document URLs — or check a single file from the command line.
 
 **Status:** Published on npm as [`@icjia/pagecount`](https://www.npmjs.com/package/@icjia/pagecount) —
-implemented, tested, and security-hardened (134 passing tests). Built from the
+implemented, tested, and security-hardened (136 passing tests). Built from the
 [design spec](docs/superpowers/specs/2026-06-22-pagecount-cli-design.md).
 
 `pagecount` is a command-line tool with two modes, chosen automatically by what you give it:
@@ -202,10 +202,13 @@ page counts are estimates (pagination depends on fonts, margins, and page size).
 
 ## Development
 
+Requires **Node 20.19+** for the dev toolchain (the vite 8 / vitest 4 test stack); the
+published CLI itself runs on **Node 20+**. The repo's `.nvmrc` pins a compatible version.
+
 ```bash
 npm install
 npm run build      # bundle to dist/
-npm test           # vitest (134 tests)
+npm test           # vitest (136 tests)
 ```
 
 See the [design spec](docs/superpowers/specs/2026-06-22-pagecount-cli-design.md) for

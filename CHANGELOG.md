@@ -4,6 +4,15 @@ All notable changes to `pagecount` are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/), and the project follows
 [Semantic Versioning](https://semver.org/).
 
+## [0.2.2] — 2026-06-23
+
+### Changed
+
+- Dev tooling only: pinned `.nvmrc` to **Node 20.19** (minimum for the vite 8 / vitest 4
+  test stack) and documented it in the README. No runtime or CLI change — the published
+  CLI still requires only **Node 20+** (`engines` unchanged); runtime dependencies need
+  at most Node 18.
+
 ## [0.2.1] — 2026-06-23
 
 ### Changed
@@ -88,6 +97,7 @@ Initial release.
   being passed to external tools, so a leading-dash filename can't be read as an
   option.
 
+[0.2.2]: https://github.com/ICJIA/pagecount/releases/tag/v0.2.2
 [0.2.1]: https://github.com/ICJIA/pagecount/releases/tag/v0.2.1
 [0.2.0]: https://github.com/ICJIA/pagecount/releases/tag/v0.2.0
 [0.1.1]: https://github.com/ICJIA/pagecount/releases/tag/v0.1.1
