@@ -4,6 +4,7 @@ import type { AddressInfo } from 'node:net';
 import { processSpreadsheet } from '../../src/spreadsheet/process';
 import { resolveConfig } from '../../src/config';
 import { pdfBytes, writeTemp } from '../helpers/fixtures';
+import { buildTotalRow } from '../../src/spreadsheet/total';
 
 let server: Server;
 let base: string;
@@ -88,5 +89,26 @@ describe('processSpreadsheet', () => {
     const cfg = resolveConfig({ allowPrivateHosts: true, noFilter: true });
     const { results } = await processSpreadsheet(file, cfg);
     expect(results.map((r) => r.status)).toEqual(['ok', 'ok']);
+  });
+
+  it('throws a range-aware error for an out-of-range explicit --filter-column index', async () => {
+    const csv = `File,Recommendation,Link\nA,Remediate,${base}/a.pdf\n`;
+    const file = await writeTemp(csv, 'oor.csv');
+    const cfg = resolveConfig({ allowPrivateHosts: true, filterColumn: '99' });
+    await expect(processSpreadsheet(file, cfg)).rejects.toThrow(/out of range/);
+  });
+
+  it('TOTAL row sums only the matched (remediate) rows, excluding filtered nulls', async () => {
+    const csv = `File,Recommendation,Link\n` +
+      `A,Remediate,${base}/a.pdf\n` +
+      `B,Accessible,${base}/a.pdf\n` +
+      `C,Remediate,${base}/a.pdf\n`;
+    const file = await writeTemp(csv, 'total-filter.csv');
+    const { loaded, counts } = await processSpreadsheet(file, resolveConfig({ allowPrivateHosts: true }));
+    expect(counts).toEqual([3, null, 3]);
+    const total = buildTotalRow(loaded.header.length, [
+      { header: 'programmatic_page_count', values: counts },
+    ]);
+    expect(total[total.length - 1]).toBe(6); // the Accessible (filtered → null) row is excluded
   });
 });

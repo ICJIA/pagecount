@@ -1,7 +1,7 @@
 import type { Config } from '../config';
 import type { RowResult, Summary } from '../types';
 import { readSpreadsheet, type LoadedSpreadsheet } from './read';
-import { detectUrlColumn, findColumn } from '../detectColumn';
+import { detectUrlColumn, findColumn, resolveColumn } from '../detectColumn';
 import { mapWithConcurrency } from '../pool';
 import { countUrl } from '../counting';
 import { isFullUrl } from '../url';
@@ -26,14 +26,19 @@ export async function processSpreadsheet(path: string, cfg: Config): Promise<Pro
   let filterCol: number | null = null;
   let accept: Set<string> | null = null;
   if (cfg.filter) {
-    const idx = findColumn(table, cfg.filter.column);
-    if (idx !== undefined) {
-      filterCol = idx;
+    if (cfg.filter.columnExplicit) {
+      // An explicit --filter-column must exist; resolveColumn throws a single-sourced,
+      // range-aware error (consistent with how --column reports a bad index/name).
+      filterCol = resolveColumn(table, cfg.filter.column, '--filter-column');
       accept = new Set(cfg.filter.values);
-    } else if (cfg.filter.columnExplicit) {
-      throw new Error(`--filter-column "${cfg.filter.column}" not found in header`);
     } else {
-      warnings.push(`No "${cfg.filter.column}" column found; counted all rows.`);
+      const idx = findColumn(table, cfg.filter.column);
+      if (idx !== undefined) {
+        filterCol = idx;
+        accept = new Set(cfg.filter.values);
+      } else {
+        warnings.push(`No "${cfg.filter.column}" column found; counted all rows.`);
+      }
     }
   }
 
