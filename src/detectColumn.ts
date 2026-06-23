@@ -5,21 +5,44 @@ export interface Table {
   rows: string[][];
 }
 
+type ColumnLookup = { ok: true; index: number } | { ok: false; reason: 'range' | 'name' };
+
+// Resolve a header name (case-insensitive, trimmed) or a 1-based index to a 0-based index.
+function lookupColumn(table: Table, ref: string): ColumnLookup {
+  const r = ref.trim();
+  if (r === '') return { ok: false, reason: 'name' };
+  const asNum = Number(r);
+  if (Number.isInteger(asNum)) {
+    const index = asNum - 1; // 1-based
+    if (index < 0 || index >= table.header.length) return { ok: false, reason: 'range' };
+    return { ok: true, index };
+  }
+  const index = table.header.findIndex((h) => h.trim().toLowerCase() === r.toLowerCase());
+  return index === -1 ? { ok: false, reason: 'name' } : { ok: true, index };
+}
+
+// Name-or-index resolution that returns undefined when the column isn't present
+// (unknown name, out-of-range index, or blank ref). Used for the optional default
+// filter column, where absence falls back to counting every row rather than erroring.
+export function findColumn(table: Table, ref: string): number | undefined {
+  const r = lookupColumn(table, ref);
+  return r.ok ? r.index : undefined;
+}
+
+// Name-or-index resolution that throws a flag-aware error when the column isn't present.
+// Used for explicit overrides (`--column`, an explicit `--filter-column`).
+export function resolveColumn(table: Table, ref: string, flagName: string): number {
+  const r = lookupColumn(table, ref);
+  if (r.ok) return r.index;
+  if (r.reason === 'range') {
+    throw new Error(`${flagName} index ${ref} is out of range (1..${table.header.length})`);
+  }
+  throw new Error(`${flagName} "${ref}" not found in header`);
+}
+
 export function detectUrlColumn(table: Table, override?: string): number {
   if (override !== undefined && override !== '') {
-    const asNum = Number(override);
-    if (Number.isInteger(asNum)) {
-      const idx = asNum - 1; // 1-based
-      if (idx < 0 || idx >= table.header.length) {
-        throw new Error(`--column index ${override} is out of range (1..${table.header.length})`);
-      }
-      return idx;
-    }
-    const idx = table.header.findIndex(
-      (h) => h.trim().toLowerCase() === override.trim().toLowerCase(),
-    );
-    if (idx === -1) throw new Error(`--column "${override}" not found in header`);
-    return idx;
+    return resolveColumn(table, override, '--column');
   }
 
   // Score each column two ways: by how many non-empty cells link to an actual

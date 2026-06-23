@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { detectUrlColumn, type Table } from '../src/detectColumn';
+import { detectUrlColumn, findColumn, resolveColumn, type Table } from '../src/detectColumn';
 
 const table: Table = {
   header: ['Name', 'Notes', 'Link'],
@@ -48,5 +48,41 @@ describe('detectUrlColumn', () => {
   });
   it('throws on an unknown name override', () => {
     expect(() => detectUrlColumn(table, 'nope')).toThrow(/not found/);
+  });
+});
+
+describe('findColumn', () => {
+  it('resolves a header name case-insensitively and trims', () => {
+    expect(findColumn(table, 'link')).toBe(2);
+    expect(findColumn(table, '  LINK ')).toBe(2);
+  });
+  it('resolves a 1-based index', () => {
+    expect(findColumn(table, '1')).toBe(0);
+    expect(findColumn(table, '3')).toBe(2);
+  });
+  it('returns undefined for an unknown name', () => {
+    expect(findColumn(table, 'nope')).toBeUndefined();
+  });
+  it('returns undefined for an out-of-range or zero index', () => {
+    expect(findColumn(table, '9')).toBeUndefined();
+    expect(findColumn(table, '0')).toBeUndefined();
+  });
+  it('returns undefined for a blank ref', () => {
+    expect(findColumn(table, '   ')).toBeUndefined();
+  });
+});
+
+describe('resolveColumn', () => {
+  it('resolves valid name or index refs', () => {
+    expect(resolveColumn(table, 'Name', '--filter-column')).toBe(0);
+    expect(resolveColumn(table, '3', '--filter-column')).toBe(2);
+  });
+  it('throws a flag-aware error for an unknown name', () => {
+    expect(() => resolveColumn(table, 'nope', '--filter-column'))
+      .toThrow(/--filter-column "nope" not found/);
+  });
+  it('throws a flag-aware error for an out-of-range index', () => {
+    expect(() => resolveColumn(table, '9', '--filter-column'))
+      .toThrow(/--filter-column index 9 is out of range/);
   });
 });
