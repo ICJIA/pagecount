@@ -4,6 +4,15 @@ All notable changes to `pagecount` are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/), and the project follows
 [Semantic Versioning](https://semver.org/).
 
+## [0.2.1] — 2026-06-23
+
+### Changed
+
+- Updated **`fast-xml-parser` 4 → 5.7.0** (runtime dependency used to read PPTX/DOCX
+  XML). No behavior change for `pagecount`'s usage; the PPTX/DOCX page-count paths and the
+  full test suite (136 tests) pass.
+- Dev tooling only (not shipped in the package): **`vitest` 2 → 4** and **`vite` 5 → 8**.
+
 ## [0.2.0] — 2026-06-23
 
 ### Added
@@ -79,6 +88,7 @@ Initial release.
   being passed to external tools, so a leading-dash filename can't be read as an
   option.
 
+[0.2.1]: https://github.com/ICJIA/pagecount/releases/tag/v0.2.1
 [0.2.0]: https://github.com/ICJIA/pagecount/releases/tag/v0.2.0
 [0.1.1]: https://github.com/ICJIA/pagecount/releases/tag/v0.1.1
 [0.1.0]: https://github.com/ICJIA/pagecount/releases/tag/v0.1.0
