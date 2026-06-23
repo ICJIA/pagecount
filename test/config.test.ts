@@ -38,3 +38,24 @@ describe('resolveConfig', () => {
     expect(() => resolveConfig({ suffix: '../x' })).toThrow();
   });
 });
+
+describe('resolveConfig filter', () => {
+  it('defaults to Recommendation=remediate', () => {
+    expect(resolveConfig({}).filter)
+      .toEqual({ column: 'Recommendation', columnExplicit: false, values: ['remediate'] });
+  });
+  it('marks an explicit filter column', () => {
+    expect(resolveConfig({ filterColumn: 'Action' }).filter)
+      .toMatchObject({ column: 'Action', columnExplicit: true });
+  });
+  it('splits, trims, lowercases, and de-dupes values', () => {
+    expect(resolveConfig({ filterValue: 'Remediate, TRUE ,remediate, ' }).filter?.values)
+      .toEqual(['remediate', 'true']);
+  });
+  it('disables filtering with noFilter', () => {
+    expect(resolveConfig({ noFilter: true }).filter).toBeNull();
+  });
+  it('rejects an all-empty filter value', () => {
+    expect(() => resolveConfig({ filterValue: ' , ,' })).toThrow();
+  });
+});
