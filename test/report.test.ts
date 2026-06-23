@@ -22,7 +22,7 @@ describe('summarize', () => {
 describe('formatters', () => {
   it('formats a spreadsheet summary with failure breakdown', () => {
     const txt = formatSpreadsheetSummary('in.csv', 'out.csv', summarize(rows));
-    expect(txt).toContain('4 rows · 1 counted · 1 no-url · 2 failed');
+    expect(txt).toContain('4 rows · 1 counted · 0 filtered · 1 no-url · 2 failed · 3 total pages');
     expect(txt).toContain('failed:');
   });
   it('formats a document line (plural / singular / rendered)', () => {
@@ -51,5 +51,24 @@ describe('rowNote', () => {
   it('returns the failure status for non-ok rows', () => {
     expect(rowNote({ row: 2, url: 'u', type: null, pageCount: null, status: 'corrupt' })).toBe('corrupt');
     expect(rowNote({ row: 3, url: null, type: null, pageCount: null, status: 'no-url' })).toBe('no-url');
+  });
+});
+
+describe('summarize with filtered rows', () => {
+  const withFiltered: RowResult[] = [
+    { row: 2, url: 'u', type: 'pdf', pageCount: 4, status: 'ok' },
+    { row: 3, url: null, type: null, pageCount: null, status: 'filtered' },
+    { row: 4, url: 'u', type: 'pdf', pageCount: 6, status: 'ok' },
+  ];
+  it('counts filtered rows separately and totals matched pages', () => {
+    expect(summarize(withFiltered))
+      .toMatchObject({ total: 3, counted: 2, filtered: 1, noUrl: 0, failed: 0, totalPages: 10 });
+  });
+});
+
+describe('rowNote for filtered', () => {
+  it('returns a friendly skipped note', () => {
+    expect(rowNote({ row: 9, url: null, type: null, pageCount: null, status: 'filtered' }))
+      .toBe('skipped (filtered out)');
   });
 });

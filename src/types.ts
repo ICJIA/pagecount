@@ -3,6 +3,7 @@ export type FileType = 'pdf' | 'docx' | 'pptx';
 export type Status =
   | 'ok'
   | 'no-url'
+  | 'filtered'
   | 'unsupported'
   | 'not-found'
   | 'http-error'
@@ -37,8 +38,10 @@ export type InputKind =
 export interface Summary {
   total: number;
   counted: number;
+  filtered: number;
   noUrl: number;
   failed: number;
+  totalPages: number;
   byError: Record<string, number>;
 }
 
