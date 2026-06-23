@@ -4,6 +4,26 @@ All notable changes to `pagecount` are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/), and the project follows
 [Semantic Versioning](https://semver.org/).
 
+## [0.2.0] — 2026-06-23
+
+### Added
+
+- **Row filtering** — spreadsheet mode now counts only rows whose **`Recommendation`**
+  column equals **`remediate`** (case-insensitive) by default, so the TOTAL reflects just
+  the pages marked for remediation. Override with `--filter-column <name|index>` and
+  `--filter-value <a,b,c>` (exact, case-insensitive, comma-separated alternatives).
+  Non-matching rows keep a blank count with `skipped (filtered out)` in the notes column
+  and are never downloaded.
+- `--no-filter` to count every row regardless of the default filter.
+- The terminal summary now reports the `filtered` row count and `total pages`.
+
+### Changed
+
+- **Behavior change:** spreadsheets containing a `Recommendation` column now auto-filter
+  to `remediate` rows by default. Sheets without that column are unaffected (every row is
+  counted, with a one-line notice); pass `--no-filter` to count all rows even when the
+  column is present.
+
 ## [0.1.1] — 2026-06-22
 
 ### Added
@@ -59,5 +79,6 @@ Initial release.
   being passed to external tools, so a leading-dash filename can't be read as an
   option.
 
+[0.2.0]: https://github.com/ICJIA/pagecount/releases/tag/v0.2.0
 [0.1.1]: https://github.com/ICJIA/pagecount/releases/tag/v0.1.1
 [0.1.0]: https://github.com/ICJIA/pagecount/releases/tag/v0.1.0

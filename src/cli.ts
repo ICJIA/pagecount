@@ -24,7 +24,7 @@ export function buildProgram(): Command {
     .option('--max-size <mb>', 'skip files larger than this (default: 100)')
     .option('--docx-render', 'force LibreOffice render for docx')
     .option('--allow-private-hosts', 'allow fetching loopback/private/link-local hosts (off by default for SSRF safety)')
-    .version('0.1.1');
+    .version('0.2.0');
   return program;
 }
 

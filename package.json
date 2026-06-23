@@ -1,6 +1,6 @@
 {
   "name": "@icjia/pagecount",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Add exact page counts to a spreadsheet of document URLs, or check a single file.",
   "type": "module",
   "bin": {

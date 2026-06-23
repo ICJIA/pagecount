@@ -3,7 +3,7 @@
 > Add exact page counts to a spreadsheet of document URLs — or check a single file from the command line.
 
 **Status:** Published on npm as [`@icjia/pagecount`](https://www.npmjs.com/package/@icjia/pagecount) —
-implemented, tested, and security-hardened (109 passing tests). Built from the
+implemented, tested, and security-hardened (134 passing tests). Built from the
 [design spec](docs/superpowers/specs/2026-06-22-pagecount-cli-design.md).
 
 `pagecount` is a command-line tool with two modes, chosen automatically by what you give it:
@@ -64,7 +64,7 @@ pdf/docx/pptx files), counts pages, and writes:
 
 The output is the original spreadsheet with **two columns appended at the far right**:
 `programmatic_page_count` (the count) and `programmatic_page_count_notes` (why a row is
-blank — e.g. `corrupt`, `unsupported`, `no-url`). They're always added, even if the
+blank — e.g. `corrupt`, `unsupported`, `no-url`, `skipped (filtered out)`). They're always added, even if the
 sheet already has a "Page Count" column. **Both a `.csv` and an `.xlsx` version are written every run.** The `.pagecount-output` directory is created
 beside the input file (and reused if it already exists). The same works for `.xlsx`,
 preserving the workbook's formatting and any extra sheets.
@@ -78,6 +78,26 @@ pagecount survey.csv ../reports/q3.xlsx
 
 See [`samples/example.csv`](samples/example.csv) for the expected input shape — a
 column of public document URLs (swap in your own URLs to try it).
+
+### Filtering rows (remediation)
+
+By default, spreadsheet mode counts pages only for rows whose **`Recommendation`** column
+equals **`remediate`** (case-insensitive). This gives remediation vendors a single number
+per site: the TOTAL row sums just the pages marked for remediation. Non-matching rows are
+kept in place with a blank `programmatic_page_count` and `skipped (filtered out)` in the
+notes column — and are never downloaded.
+
+```bash
+pagecount "samples/ICJIA R&A publications-as of 2026-05-29(DVFR).csv"
+```
+
+- Different column or values:
+  `pagecount data.csv --filter-column Action --filter-value fix,review`
+- Count **every** row (e.g. a sheet with no disposition column, or when you want all of
+  them): `pagecount data.csv --no-filter`
+
+If a sheet has no `Recommendation` column and you didn't pass `--filter-column`,
+`pagecount` prints a one-line notice and counts every row.
 
 ### Document mode
 
@@ -103,6 +123,9 @@ Nothing is written to disk. Exits non-zero if the file can't be counted.
 | `-o, --output <dir>` | (spreadsheet) force one shared output dir | `.pagecount-output` beside each file |
 | `-c, --column <name\|index>` | (spreadsheet) URL column, by header name or 1-based index | auto-detect (prefers document links) |
 | `--count-column <name>` | (spreadsheet) count column name (a `<name>_notes` column is added too) | `programmatic_page_count` |
+| `--filter-column <name\|index>` | (spreadsheet) only count rows matching `--filter-value`; name or 1-based index | `Recommendation` |
+| `--filter-value <values>` | (spreadsheet) comma-separated value(s) to match (exact, case-insensitive) | `remediate` |
+| `--no-filter` | (spreadsheet) count every row, ignoring the default filter | off |
 | `--suffix <text>` | (spreadsheet) output filename suffix; `""` to disable | `pagecount` |
 | `--json` | emit JSON (sidecar file in spreadsheet mode; stdout in document mode) | off |
 | `-q, --quiet` | (document) print only the bare page number | off |
@@ -149,8 +172,8 @@ pagination depends on fonts and margins.
 
   ```
   data.csv  →  .pagecount-output/data-pagecount.csv
-    150 rows · 142 counted · 3 no-url · 5 failed
-      failed: 2 timeout · 1 not-found · 2 unsupported
+    150 rows · 14 counted · 132 filtered · 3 no-url · 1 failed · 318 total pages
+      failed: 1 timeout
   ```
 
 - Add `--json` for a sidecar file with the full per-row detail (URL, type, count,
@@ -182,7 +205,7 @@ page counts are estimates (pagination depends on fonts, margins, and page size).
 ```bash
 npm install
 npm run build      # bundle to dist/
-npm test           # vitest (109 tests)
+npm test           # vitest (134 tests)
 ```
 
 See the [design spec](docs/superpowers/specs/2026-06-22-pagecount-cli-design.md) for
